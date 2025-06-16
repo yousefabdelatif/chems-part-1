@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electro & Corrosion Exam</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .exam-container {
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+        .question-card {
+            background-color: #e2e8f0;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+        }
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .option-label:hover {
+            background-color: #f0f4f8;
+            border-color: #94a3b8;
+        }
+        .option-input[type="radio"] {
+            margin-right: 12px;
+            transform: scale(1.2);
+            accent-color: #3b82f6;
+        }
+        .feedback {
+            margin-top: 15px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        .feedback.correct {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #34d399;
+        }
+        .feedback.incorrect {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+        .navigation-buttons button {
+            background-color: #3b82f6;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: bold;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        }
+        .navigation-buttons button:hover {
+            background-color: #2563eb;
+            transform: translateY(-2px);
+        }
+        .navigation-buttons button:disabled {
+            background-color: #93c5fd;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+        .submit-button {
+            background-color: #10b981;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: bold;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+        }
+        .submit-button:hover {
+            background-color: #059669;
+            transform: translateY(-2px);
+        }
+        .results-summary {
+            background-color: #f0f9ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .results-summary h2 {
+            color: #1e40af;
+            margin-bottom: 15px;
+        }
+        .results-summary p {
+            font-size: 1.1em;
+            color: #374151;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="exam-container">
+        <h1 class="text-3xl font-extrabold text-center text-gray-800 mb-8">Electro & Corrosion Exam</h1>
+
+        <div id="question-display">
+            <!-- Question will be loaded here by JavaScript -->
+        </div>
+
+        <div class="navigation-buttons flex justify-between mt-8">
+            <button id="prev-btn" class="px-6 py-3 rounded-xl" disabled>Previous</button>
+            <button id="next-btn" class="px-6 py-3 rounded-xl">Next</button>
+            <button id="submit-btn" class="submit-button px-6 py-3 rounded-xl hidden">Submit Exam</button>
+        </div>
+
+        <div id="results" class="results-summary hidden">
+            <!-- Results will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+        // Array of questions, options, and correct answers
+        // Extracted from the PDF
+        const questions = [
+            {
+                question: "Magnesium metal is more cathodic than the following metal",
+                options: ["Zinc", "Lead", "Calcium", "All of the previous"],
+                answer: "Calcium"
+            },
+            {
+                question: "Different metals such as copper and aluminum are connected to each other and immersed in non-electrolyte solution. which of the following is correct?",
+                options: ["No corrosion occurs.", "Aluminum metal", "Copper metal.", "Both of aluminum and copper."],
+                answer: "No corrosion occurs."
+            },
+            {
+                question: "During steel electroplating process with Ni, the following electrode is the anodic one.",
+                options: ["Ni", "Cu", "Al", "Au"],
+                answer: "Ni"
+            },
+            {
+                question: "Inorganic coatings include the following except",
+                options: ["Cement", "Carbon", "Ceramics", "Plastics"],
+                answer: "Plastics"
+            },
+            {
+                question: "Galvanic cell reactions driving force is the",
+                options: ["Potential difference between anode and cathode.", "Connecting the electrode by a salt bridge.", "Potential of the power supply", "All of the above"],
+                answer: "Potential difference between anode and cathode."
+            },
+            {
+                question: "The following reaction/s is /are reduction reaction/s",
+                options: ["$H_{2}=2H^{+}+2e$", "$2H_{2}O+O_{2}+4e=4OH^{-}$", "$Fe=Fe^{+2}+2e$", "Both a and b"],
+                answer: "$2H_{2}O+O_{2}+4e=4OH^{-}$"
+            },
+            {
+                question: "In the electrolytic cell, the solution temperature increases owing to",
+                options: ["Conversion of chemical energy into electrical energy", "Slowness of charge transfer step", "Conversion of part of electrical energy provided to the cell into heat", "None of the above"],
+                answer: "Conversion of part of electrical energy provided to the cell into heat"
+            },
+            {
+                question: "The following reaction is reduction reaction for crevice corrosion",
+                options: ["$2H^{+}+2e=H_{2}$", "$2H_{2}O+O_{2}+4e=4OH$", "$Fe=Fe^{+2}+2e$", "Both a and b"],
+                answer: "$2H_{2}O+O_{2}+4e=4OH$"
+            },
+            {
+                question: "As shown in figure (referring to the image from the PDF showing Cu in HCl), the following forms of corrosion take place",
+                options: ["Electrochemical corrosion takes place.", "Copper metal will be corroded.", "No corrosion occurs", "None of the above"],
+                answer: "No corrosion occurs"
+            },
+            {
+                question: "Metals and alloys are corroded directly in an acidic medium owing to",
+                options: ["Direct corrosion.", "Electrochemical corrosion", "Chemical corrosion", "Both a and c"],
+                answer: "Both a and c"
+            },
+            {
+                question: "As shown in the figure (referring to the image from the PDF showing Copper impeller), the following forms of corrosion take place",
+                options: ["Galvanic corrosion.", "Differential aeration.", "Both a and b.", "Chemical corrosion"],
+                answer: "Both a and b."
+            },
+            {
+                question: "A metallic structure made from steel, the differential aeration corrosion takes place due to",
+                options: ["Difference in oxygen concentration.", "Potential difference between two different metals.", "Both a and b.", "None of the above"],
+                answer: "Difference in oxygen concentration."
+            },
+            {
+                question: "As shown in the figure (referring to the image from the PDF showing Steel ship hull and steel welding), the following forms of corrosion takes place",
+                options: ["Differential aeration in (A).", "Galvanic corrosion in(C).", "Galvanic corrosion in both (A) and (B)", "Chemical corrosion"],
+                answer: "Galvanic corrosion in(C)."
+            },
+            {
+                question: "The galvanic corrosion (dissimilar metal cell corrosion) occurs due to",
+                options: ["Presence of porous oxide film on the metal surface after hot rolling.", "Indirect contact between metal and the atmosphere.", "Contact between two or more different metals in a corrosive environment", "Both a and c."],
+                answer: "Both a and c."
+            },
+            {
+                question: "Stress corrosion cracking of copper alloys occurs due to the presence of",
+                options: ["Strong corrosive environment.", "Caustic soda solution.", "Ammonia liquid.", "Both a and c."],
+                answer: "Ammonia liquid."
+            },
+            {
+                question: "Pitting corrosion increases as",
+                options: ["Velocity of the solution decreases.", "PH of the solution decreases.", "The electrolyte be more acidic.", "Both a and c."],
+                answer: "Velocity of the solution decreases."
+            },
+            {
+                question: "Stressed stainless steel structure is exposed to distilled water, the structure will be",
+                options: ["Corroded owing to pitting corrosion.", "Corroded owing to S.C.C.", "Both a and b.", "No corrosion occurs."],
+                answer: "No corrosion occurs."
+            },
+            {
+                question: "In the galvanization method, the coating metal (barrier) is must be",
+                options: ["More anodic.", "insoluble.", "More cathodic.", "Both a and b."],
+                answer: "Both a and b."
+            },
+            {
+                question: "Inhibitors means that a chemical compound used to",
+                options: ["Decrease electrolyte resistance.", "Decrease the corrosion rate.", "Increase the corrosion rate.", "Both b and c."],
+                answer: "Decrease the corrosion rate."
+            },
+            {
+                question: "Cathodic protection can be carried out",
+                options: ["Using sacrificial anode which is more cathodic than the metal to be protected.", "Using impressed current.", "Both a and b.", "None of the above."],
+                answer: "Using impressed current."
+            },
+            {
+                question: "To protect article surface with silver metal (by electroplating method) the electrolyte solution must be",
+                options: ["Bad conductor.", "Soluble salt of any metal.", "Soluble salt of silver metal.", "Soluble salt of cathodic metal."],
+                answer: "Soluble salt of silver metal."
+            },
+            {
+                question: "The best protection for a steel pipeline from corrosion is",
+                options: ["Coating.", "Cathodic protection.", "Painting.", "Both a and b."],
+                answer: "Both a and b."
+            },
+            {
+                question: "Copper metal (as barrier is used to protect iron from air, its barrier act as",
+                options: ["Sacrificial barrier.", "Passive barrier.", "Inert barrier.", "Perfect barrier."],
+                answer: "Inert barrier."
+            },
+            {
+                question: "Oxidizing agent react with the anodic reaction products (i.e., $Fe^{+2}$) forming an oxide film isolating the anode are called",
+                options: ["Passivators.", "Adsorption inhibitors.", "$ZnSO_{4}$ and $Na_{3}PO_{4}$.", "None of the previous options."],
+                answer: "Passivators."
+            },
+            {
+                question: "From the most steel coating method is",
+                options: ["Steel coating by plastics.", "Steel galvanization.", "Steel coating by enamels.", "All of the previous options."],
+                answer: "Steel galvanization."
+            },
+            {
+                question: "Erosion corrosion mechanism is resulting from",
+                options: ["Localized corrosion.", "Chemical attack.", "Mechanical Abrasion.", "Both b and c."],
+                answer: "Both b and c."
+            },
+            {
+                question: "The Atmospheric corrosion decreases with increasing:",
+                options: ["Temperature.", "Metal surface roughness.", "Time.", "None of the above"],
+                answer: "None of the above"
+            },
+            {
+                question: "The cement is used in the protection of steel structures, so it is considered to be:",
+                options: ["Type of paints.", "Non-metallic coating", "Metallic coating.", "Sacrificial barrier."],
+                answer: "Non-metallic coating"
+            },
+            {
+                question: "Mainly conditions of impressed current method are",
+                options: ["Sacrificial anode is more anodic.", "Sacrificial anode and impressed current.", "Feeding a D.C current from an external D.C power supply.", "Both a and c."],
+                answer: "Feeding a D.C current from an external D.C power supply."
+            },
+            {
+                question: "Cathodic reaction of Fe-Cu galvanic cell is $(pH=7)$",
+                options: ["$2~H_{+}+2c\\rightarrow H_{2}$", "$Cu_{++}+2e\\rightarrow Cu$", "$2H_{2}O+O_{2}+4e\\rightarrow4OH$", "Both a and c"],
+                answer: "$2H_{2}O+O_{2}+4e\\rightarrow4OH$"
+            },
+            {
+                question: "Erosion corrosion takes place due to:",
+                options: ["Chemical attack of corrosive environment.", "Different stresses in the metal.", "Physical attack of moving fluid.", "both a and c."],
+                answer: "both a and c."
+            },
+            {
+                question: "Formation of scale inside the boilers or on heating pipes causes",
+                options: ["increasing the heat transfer rate.", "decreasing the heat transfer rate.", "less consumption of fuel.", "both a and c."],
+                answer: "decreasing the heat transfer rate."
+            },
+            {
+                question: "Increasing Erosion corrosion with",
+                options: ["the presence of suspended and insoluble particles.", "decreasing velocity of moving corrosive environment.", "both a and b.", "none of the above."],
+                answer: "the presence of suspended and insoluble particles."
+            },
+            {
+                question: "Galvanization is used in the protection of steel structures, so it is considered to be a/an",
+                options: ["Type of paints.", "Non-metallic coating.", "Organic coating.", "Sacrificial barrier."],
+                answer: "Sacrificial barrier."
+            },
+            {
+                question: "Silver metal is less anodic than",
+                options: ["Aluminium metal.", "Gold metal.", "Platinum metal.", "None of them"],
+                answer: "Aluminium metal."
+            },
+            {
+                question: "The anodic reaction of galvanic corrosion is:",
+                options: ["$2H_{+}+2e-\\rightarrow H_{2}$", "$2~H_{2}O+O_{2}+4~e-\\rightarrow4OH$", "Both a and b", "M→ Mn+ + ne"],
+                answer: "M→ Mn+ + ne"
+            },
+            {
+                question: "To avoid erosion-corrosion,",
+                options: ["the pipe thickness should be decreased in the areas exposed to fluid impingement", "the pipe thickness should be increased in the areas exposed to fluid impingement", "using metals such as copper (Cu) and lead (Pb) in the areas exposed to fluid impingement", "increasing the fluid velocity"],
+                answer: "the pipe thickness should be increased in the areas exposed to fluid impingement"
+            },
+            {
+                question: "Stressed stainless steel structure is exposed to sea water, the structure will be",
+                options: ["Corroded owing to pitting corrosion.", "Corroded owing to S.C.C.", "Both a and b.", "No corrosion occurs."],
+                answer: "Corroded owing to S.C.C."
+            },
+            {
+                question: "In which type of cell does a non-spontaneous reaction occur, requiring an external electrical energy input?",
+                options: ["Voltaic cell", "Electrolytic cell", "both (a) and (b)", "neither (a) nor (b)"],
+                answer: "Electrolytic cell"
+            },
+            {
+                question: "What is the primary function of electrolyte solution in galvanic cell?",
+                options: ["To acts as a barrier between the anode and cathode compartment", "To provide a source of electrons for the reaction", "To allow the flow of ions within the cell, complete the circuit", "To generate the potential difference between the electrodes."],
+                answer: "To allow the flow of ions within the cell, complete the circuit"
+            },
+            {
+                question: "In a dissimilar metal corrosion cell, the less noble (more active) metal acts as.....",
+                options: ["Cathode", "Anode", "electrolytes", "catalyst"],
+                answer: "Anode"
+            },
+            {
+                question: "What cause the formation of microscopic dissimilar cell within steel?",
+                options: ["The presence of high percentage of carbon.", "The even distribution of carbon throughout the steel.", "The formation of cementite (Fe3C), a more noble metal than steel.", "Steel lacking any oxides or alloying elements."],
+                answer: "The formation of cementite (Fe3C), a more noble metal than steel."
+            },
+            {
+                question: "How does the cathodic to anodic area ratio in dissimilar metal cell affect the corrosion rate?",
+                options: ["A larger cathodic area doesn't affect the corrosion rate.", "A larger anodic area leads to a faster corrosion rate", "A larger cathodic area allows for higher rate of the cathodic reaction, accelerating the corrosion of the anode.", "The ratio only affects the overall cell potential."],
+                answer: "A larger cathodic area allows for higher rate of the cathodic reaction, accelerating the corrosion of the anode."
+            },
+            {
+                question: "What three factor are necessary for stress corrosion cracking to occur?",
+                options: ["High temperature, acidic environment, and any metal.", "Applied stress, specific corrosive environment and susceptible material.", "Uneven surface, presence of a galvanic couple and electrical current.", "Anode with high potential difference, porous barrier and oxygen concentration variation."],
+                answer: "Applied stress, specific corrosive environment and susceptible material."
+            },
+            {
+                question: "What's the key factor that contributes to crevice corrosion?",
+                options: ["High pH levels in the electrolyte solution.", "The presence of the strong oxidizing agent.", "Localized depletion of oxygen within", "Continuous flow of ions between anode and cathode."],
+                answer: "Localized depletion of oxygen within"
+            },
+            {
+                question: "Which of the following is NOT a factor",
+                options: ["Chemical composition of the fluid.", "Absence of suspended solids", "Flow velocity and turbulence of the fluid.", "Hardness of the metal."],
+                answer: "Absence of suspended solids"
+            },
+            {
+                question: "Compared to rural areas, urban environments have higher level of pollutants such as......",
+                options: ["Carbon", "Sulfur", "Sand and abrasion.", "All of the above."],
+                answer: "Sulfur"
+            },
+            {
+                question: "A less noble metal can be chosen as a coating material because.....",
+                options: ["It creates a more aesthetically pleasing surface.", "It forms a stronger galvanic bond with the underlining structure.", "It acts as a sacrificial anode, corroding preferentially to protect the structure.", "A less noble metal is always less expensive."],
+                answer: "It acts as a sacrificial anode, corroding preferentially to protect the structure."
+            },
+            {
+                question: "Which of the following is a method for applying metallic coating?",
+                options: ["deposition (CVD).", "Spraying molten metal on the workpiece.", "Passivation by forming thin oxide film.", "Brazing the coating material onto the workpiece."],
+                answer: "Spraying molten metal on the workpiece."
+            },
+            {
+                question: "Oxygen scavengers act as corrosion inhibitors. What's their primary function?",
+                options: ["Directly passivate the metal surface.", "Remove dissolved oxygen, which is essential for the cathodic reaction.", "Target the anodic reaction and prevent metal dissolution.", "Create conductive pathway for electrons between anode and cathode."],
+                answer: "Remove dissolved oxygen, which is essential for the cathodic reaction."
+            },
+            {
+                question: "How do passivators prevent corrosion?",
+                options: ["They form a complex ion with the metal ion, reduce their reactivity.", "They remove dissolved oxygen from corrosive environment.", "They create passivating oxide film on the anode, hindering metal dissolution.", "They increase the rate of the cathodic reaction to balance the anodic reaction."],
+                answer: "They create passivating oxide film on the anode, hindering metal dissolution."
+            },
+            {
+                question: "Which of the following is an example of a passivator?",
+                options: ["Sodium bisulfite $(NaHSO_{3})$", "Sodium silicate $(NaSiO_{3})$", "Sodium nitrite $(NaNO_{2})$", "Zinc sulfate $(ZnSO_{4})$"],
+                answer: "Sodium nitrite $(NaNO_{2})$"
+            },
+            {
+                question: "Besides sacrificial anodes, what's the alternative method for cathodic protection?",
+                options: ["Using passivating inhibitor in the corrosive environment.", "Applying a protective coating to the structure.", "Cathodic protection with impressed current from an external power source.", "Heating the metal structure to form a protective oxide layer."],
+                answer: "Cathodic protection with impressed current from an external power source."
+            },
+            {
+                question: "When might expensive alloys be chosen for construction material over steel?",
+                options: ["When a more aesthetically pleasing material is desired.", "In situation where exceptional corrosion resistance is crucial.", "Whenever a lightweight material is needed for the structure.", "Steel with additional protection methods is always the preferred choice."],
+                answer: "In situation where exceptional corrosion resistance is crucial."
+            },
+            {
+                question: "How do cyclic stresses affect metallic objects in corrosive environment?",
+                options: ["Cyclic stresses have no significant impact on corrosion rates.", "Cyclic stresses can lead to failure at stress level below the ultimate tensile stress, especially with corrosion.", "Cyclic stresses create protective oxide layer on the metal surface.", "The presence of corrosive solution increases the ultimate tensile stress of the metal."],
+                answer: "Cyclic stresses can lead to failure at stress level below the ultimate tensile stress, especially with corrosion."
+            },
+            {
+                question: "What is/are the proper design(s) of those shown in the following figure? (referencing the design diagram in the PDF)",
+                options: ["3", "4", "2 and 4", "1 and 3"],
+                answer: "2 and 4"
+            },
+            {
+                question: "Iron (Fe) corrodes in contact with copper (cu) in an electrolyte. What equation represents the cathodic reaction (assuming a neutral or basic medium):",
+                options: ["$Fe(s)=Fe^{+2}(aq)+2e^{-}$", "$Cu^{+2}(aq)+2e^{-}=Cu_{(s)}$", "$1/2O_{2}(_{g)}+H_{2}O_{(L)}+2e^{-}=2OH^{-}_{(a}$)", "$2H^{+}_{(aq)}+2e^{-}=H_{2(g)}$"],
+                answer: "$1/2O_{2}(_{g)}+H_{2}O_{(L)}+2e^{-}=2OH^{-}_{(a}$)"
+            },
+            {
+                question: "What's the reference half- reaction used to determine other standard reduction potential?",
+                options: ["The reduction of $Cu^{+2}(aq)$ to $Cu_{(s)}$", "The oxidation of $Zn_{(s)}$ to $Zn^{+2}(aq)$", "The reduction of $H^{+}(aq)$ to $H_{2(g)}$", "There's no single reference reaction"],
+                answer: "The reduction of $H^{+}(aq)$ to $H_{2(g)}$"
+            },
+            {
+                question: "What's another term for the potential difference between the two electrodes in a voltaic cell?",
+                options: ["Standard potential", "at the anode", "electromotive force", "no oxidation occurs"],
+                answer: "electromotive force"
+            },
+            {
+                question: "In a galvanic cell, where does oxidation occur?",
+                options: ["At the cathode", "At the anode", "At both electrodes", "no oxidation occurs"],
+                answer: "At the anode"
+            },
+            {
+                question: "In an electrolytic cell, which electrode is connected to the negative terminal of the power supply?",
+                options: ["Anode", "cathode", "both a and b"],
+                answer: "cathode"
+            },
+            {
+                question: "Electrochemistry is the study of the relationship between:",
+                options: ["Chemical energy and light energy", "Chemical energy and electrical energy", "Chemical energy and heat energy", "Light energy and sound energy"],
+                answer: "Chemical energy and electrical energy"
+            },
+            {
+                question: "How does corrosion differ from erosion?",
+                options: ["Corrosion is a chemical process, while erosion is a mechanical process.", "Corrosion only affects metals, whereas erosion can affect any material", "Corrosion weakens material, while erosion strengthens them.", "There's no difference between corrosion and erosion"],
+                answer: "Corrosion is a chemical process, while erosion is a mechanical process."
+            },
+            {
+                question: "What are some of the financial burdens caused by corrosion?",
+                options: ["Increased efficiency of equipment.", "Improve heat transfer in boilers.", "Reduced cost of maintaining equipment.", "Increased costs due to repair, replacement and production shutdown."],
+                answer: "Increased costs due to repair, replacement and production shutdown."
+            },
+            {
+                question: "Which of the following is NOT a method for combating SCC?",
+                options: ["Decreasing the thickness of the metal", "Applying cathodic protection", "Lowering the stress on the metal", "Avoiding contact with specific corrosive environments."],
+                answer: "Decreasing the thickness of the metal"
+            },
+            {
+                question: "How does distance between the two electrodes in a dissimilar metal cell influence the corrosion rate?",
+                options: ["A larger distances increase the corrosion rate", "It depends on the specific metals involved", "A larger distance decreases the corrosion rate", "The distance does not affect the corrosion rate"],
+                answer: "A larger distance decreases the corrosion rate"
+            },
+            {
+                question: "Which of the following is NOT a method for protecting metals against corrosion?",
+                options: ["Decreases use of metals in structure.", "Application of corrosion inhibitors.", "Material selection based on corrosion resistance", "Electrical protection methods like cathodic protection"],
+                answer: "Decreases use of metals in structure."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        const userAnswers = new Array(questions.length).fill(null);
+        const questionDisplay = document.getElementById('question-display');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const resultsDiv = document.getElementById('results');
+
+        // Function to render a question
+        function renderQuestion() {
+            const q = questions[currentQuestionIndex];
+            if (!q) {
+                console.error("Question not found for index:", currentQuestionIndex);
+                return;
+            }
+
+            questionDisplay.innerHTML = `
+                <div class="question-card">
+                    <p class="text-xl font-semibold text-gray-700 mb-6">Q${currentQuestionIndex + 1}. ${q.question}</p>
+                    <div class="options space-y-4">
+                        ${q.options.map((option, idx) => `
+                            <label class="option-label">
+                                <input type="radio" name="question-${currentQuestionIndex}" value="${option}" class="option-input" data-option-index="${idx}"
+                                    ${userAnswers[currentQuestionIndex] === option ? 'checked' : ''}
+                                >
+                                <span class="text-gray-800">${option}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                    <div id="feedback-${currentQuestionIndex}" class="feedback hidden"></div>
+                </div>
+            `;
+
+            // Add event listeners to radio buttons for instant correction
+            document.querySelectorAll(`input[name="question-${currentQuestionIndex}"]`).forEach(radio => {
+                radio.addEventListener('change', (event) => {
+                    const selectedOption = event.target.value;
+                    userAnswers[currentQuestionIndex] = selectedOption;
+                    checkAnswer(selectedOption);
+                });
+            });
+
+            updateNavigationButtons();
+            displayFeedbackForCurrentQuestion();
+        }
+
+        // Function to check the answer and provide instant feedback
+        function checkAnswer(selectedOption) {
+            const feedbackDiv = document.getElementById(`feedback-${currentQuestionIndex}`);
+            const q = questions[currentQuestionIndex];
+
+            if (selectedOption === q.answer) {
+                feedbackDiv.className = 'feedback correct';
+                feedbackDiv.textContent = 'Correct!';
+            } else {
+                feedbackDiv.className = 'feedback incorrect';
+                feedbackDiv.textContent = `Incorrect. The correct answer is: ${q.answer}`;
+            }
+            feedbackDiv.classList.remove('hidden');
+        }
+
+        // Function to display feedback if the user has already answered the question
+        function displayFeedbackForCurrentQuestion() {
+            const feedbackDiv = document.getElementById(`feedback-${currentQuestionIndex}`);
+            const userAnswer = userAnswers[currentQuestionIndex];
+            if (userAnswer !== null) {
+                checkAnswer(userAnswer); // Re-run checkAnswer to display feedback
+            } else {
+                feedbackDiv.classList.add('hidden'); // Hide feedback if no answer selected
+            }
+        }
+
+        // Update button states
+        function updateNavigationButtons() {
+            prevBtn.disabled = currentQuestionIndex === 0;
+            if (currentQuestionIndex === questions.length - 1) {
+                nextBtn.classList.add('hidden');
+                submitBtn.classList.remove('hidden');
+            } else {
+                nextBtn.classList.remove('hidden');
+                submitBtn.classList.add('hidden');
+            }
+        }
+
+        // Navigation event listeners
+        prevBtn.addEventListener('click', () => {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                renderQuestion();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+            }
+        });
+
+        // Submit exam and show results
+        submitBtn.addEventListener('click', () => {
+            let correctCount = 0;
+            for (let i = 0; i < questions.length; i++) {
+                if (userAnswers[i] === questions[i].answer) {
+                    correctCount++;
+                }
+            }
+
+            questionDisplay.classList.add('hidden');
+            document.querySelector('.navigation-buttons').classList.add('hidden');
+            resultsDiv.classList.remove('hidden');
+            resultsDiv.innerHTML = `
+                <h2 class="text-2xl font-bold">Exam Results</h2>
+                <p class="text-lg mt-4">You answered ${correctCount} out of ${questions.length} questions correctly.</p>
+                <p class="text-lg">Your score: ${((correctCount / questions.length) * 100).toFixed(2)}%</p>
+            `;
+        });
+
+        // Initial render
+        renderQuestion();
+    </script>
+</body>
+</html>
